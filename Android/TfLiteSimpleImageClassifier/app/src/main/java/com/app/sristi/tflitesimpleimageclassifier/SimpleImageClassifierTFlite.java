@@ -41,6 +41,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.logging.Handler;
+
 public class SimpleImageClassifierTFlite extends AppCompatActivity {
     private Interpreter tflite;
 
@@ -53,12 +55,14 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
     private static final int DIM_PIXEL_SIZE = 3;
     private static final int ImageSizeX = 224;
     private static final int ImageSizeY = 224;
+    private static final int DISPImageSizeX = 480;
+    private static final int DISPImageSizeY = 480;
     private static final int NumBytesPerChannel = 4;
     protected ByteBuffer imgData = null;
     private int[] intValues = new int[ImageSizeX * ImageSizeY];
     private static final String MODEL_PATH = "mobilenet_v1_1_0_224_float.tflite";
     private static final String LABEL_PATH = "labels_float.txt";
-    private static final String IMAGE_FILE_NAME = "test_image.jpg";
+    // private static final String IMAGE_FILE_NAME = "test_image.jpg";
     private List<String> labelList;
     private static final int IMAGE_MEAN = 128;
     private static final float IMAGE_STD = 128.0f;
@@ -68,6 +72,17 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
     private float[][] labelProbArray = null;
     private boolean nnapi = true;
     private static final int RESULTS_TO_SHOW = 3;
+    private final String images[] = {"test_image.jpg", "test_image1.jpg",
+            "test_image2.jpg","test_image3.jpg","test_image4.jpg",
+            "test_image5.jpg","test_image.jpg", "test_image1.jpg",
+            "test_image2.jpg","test_image3.jpg","test_image4.jpg",
+            "test_image5.jpg","test_image.jpg", "test_image1.jpg",
+            "test_image2.jpg","test_image3.jpg","test_image4.jpg",
+            "test_image5.jpg","test_image.jpg", "test_image1.jpg",
+            "test_image2.jpg","test_image3.jpg","test_image4.jpg",
+            "test_image5.jpg"};
+    private final ArrayList<Integer> inferencetimes = new ArrayList<Integer>();
+    private final int avg_inferenece_time =0;
 
     private PriorityQueue<Map.Entry<String, Float>> sortedLabels =
             new PriorityQueue<>(
@@ -95,19 +110,11 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
         setContentView(R.layout.activity_simple_image_classifier_tflite);
         Button btn = (Button) findViewById(R.id.button);
 
-        final TextView tx1 = (TextView) findViewById(R.id.textView2);
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AssetManager assetManager = getAssets();
-                try {
-                    fimg = assetManager.open(IMAGE_FILE_NAME);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                ip_bm = BitmapFactory.decodeStream(fimg);
-                final Bitmap scaledBitmap = Bitmap.createScaledBitmap(ip_bm, ImageSizeX, ImageSizeY, true);
+                final AssetManager assetManager = getAssets();
 
                 imgData =
                         ByteBuffer.allocateDirect(
@@ -135,12 +142,8 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
 
                 try {
                     labelList = new ArrayList<String>();
-                    Log.d(TAG,"About the read Labels data");
-            /*
-            AssetFileDescriptor descriptor = getApplicationContext().getAssets().openFd("labels_float.txt");
-            Log.d(TAG,"File Descriptor About the read Labels data");
-            BufferedReader reader = new BufferedReader(new FileReader(descriptor.getFileDescriptor()));
-            */
+                    Log.d(TAG, "About the read Labels data");
+
 
                     BufferedReader reader =
                             new BufferedReader(new InputStreamReader(getAssets().open(LABEL_PATH)));
@@ -156,21 +159,66 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
 
                 tflite = new Interpreter(model_buf);
                 ToggleButton simpleToggleButton = (ToggleButton) findViewById(R.id.simpleToggleButton);
-                nnapi= simpleToggleButton.isChecked();
+                nnapi = simpleToggleButton.isChecked();
                 tflite.setUseNNAPI(nnapi);
                 filterLabelProbArray = new float[FILTER_STAGES][getNumLabels()];
 
-                final String textToShow = classifyFrame(scaledBitmap);
-                // Set ImageView image as a Bitmap
-                ImageView im = (ImageView)findViewById(R.id.imageView2);
-                Bitmap image_display = Bitmap.createScaledBitmap(ip_bm, 720, 720, true);
-                im.setImageBitmap(image_display);
 
-                tx1.setText(textToShow);
-                Log.d(TAG,textToShow);
-                scaledBitmap.recycle();
+
+                Log.d(TAG,"Length"+images.length);
+                int cal = 0;
+                //...................................... Handler begin
+                final android.os.Handler handler = new android.os.Handler();
+                handler.postDelayed(new Runnable() {
+                    int i=0;
+                    public void run() {
+                        int time=0;
+                        TextView tx1 = (TextView) findViewById(R.id.textView2);
+                        TextView tx2 = (TextView) findViewById(R.id.textView3);
+                        ImageView im = (ImageView) findViewById(R.id.imageView2);
+                        if(i == images.length){ // just remove call backs
+                            for(int i =0;i<images.length;i++) {
+                                Log.d(TAG,"inferencetimes["+i+"]"+inferencetimes.get(i));
+                                time = time + inferencetimes.get(i);
+                            }
+                            tx1.setText("Summary:\n\tAverage Inference time (ms): "+(time/images.length));
+                            tx2.setText("");
+                            im.setImageResource(android.R.color.transparent);
+                            handler.removeCallbacks(this);
+                        }else {
+                            try {
+                                fimg = assetManager.open(images[i]);
+                                i++;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            ip_bm = BitmapFactory.decodeStream(fimg);
+                            final Bitmap scaledBitmap = Bitmap.createScaledBitmap(ip_bm, ImageSizeX, ImageSizeY, true);
+
+                            final String textToShow[] = (classifyFrame(scaledBitmap)).split("\n");
+                            // Set ImageView image as a Bitmap
+
+                            Bitmap image_display = Bitmap.createScaledBitmap(ip_bm, DISPImageSizeX, DISPImageSizeY, true);
+                            im.setImageBitmap(image_display);
+
+
+
+
+                            tx1.setText("Inference time (ms): "+textToShow[0]);
+                            inferencetimes.add(Integer.valueOf(textToShow[0]));
+                            tx2.setText(textToShow[1] + '\n' + textToShow[2] + '\n' + textToShow[3] + '\n' + textToShow[4]);
+                            Log.d(TAG, textToShow[0]);
+                            handler.postDelayed(this, 500);
+
+                            scaledBitmap.recycle();
+                        }
+                    }
+                }, 500);
+                //...................................... Handler end
+
             }
         });
+
     }
 
     private boolean checkIsTablet() {
@@ -213,7 +261,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
         long endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "Inference time (ms): " + Long.toString(endTime - startTime));
         applyFilter();
-        textToShow = "Inference time (ms): "+Long.toString(endTime - startTime)+"\nResult:"+"\t"+printTopKLabels();
+        textToShow = Long.toString(endTime - startTime)+"\nResult:"+"\t"+printTopKLabels();
         return textToShow;
     }
 
