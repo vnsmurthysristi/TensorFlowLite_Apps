@@ -81,7 +81,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
             "test_image5.jpg","test_image.jpg", "test_image1.jpg",
             "test_image2.jpg","test_image3.jpg","test_image4.jpg",
             "test_image5.jpg"};
-    private final ArrayList<Integer> inferencetimes = new ArrayList<Integer>();
+    private ArrayList<Integer> inferencetimes = new ArrayList<Integer>();
     private final int avg_inferenece_time =0;
 
     private PriorityQueue<Map.Entry<String, Float>> sortedLabels =
@@ -98,7 +98,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         boolean status = checkIsTablet();
-        Log.d(TAG,"Status: "+status);
+        //Log.d(TAG,"Status: "+status);
         if(status){
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
@@ -142,7 +142,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
 
                 try {
                     labelList = new ArrayList<String>();
-                    Log.d(TAG, "About the read Labels data");
+                    //Log.d(TAG, "About the read Labels data");
 
 
                     BufferedReader reader =
@@ -165,7 +165,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
 
 
 
-                Log.d(TAG,"Length"+images.length);
+                //(TAG,"Length"+images.length);
                 int cal = 0;
                 //...................................... Handler begin
                 final android.os.Handler handler = new android.os.Handler();
@@ -178,11 +178,13 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
                         ImageView im = (ImageView) findViewById(R.id.imageView2);
                         if(i == images.length){ // just remove call backs
                             for(int i =0;i<images.length;i++) {
-                                Log.d(TAG,"inferencetimes["+i+"]"+inferencetimes.get(i));
+                                //Log.d(TAG,"inferencetimes["+i+"]"+inferencetimes.get(i));
                                 time = time + inferencetimes.get(i);
                             }
                             tx1.setText("Summary:\n\tAverage Inference time (ms): "+(time/images.length));
+                            //Log.d(TAG,"Average Inference time (ms): "+(time/images.length));
                             tx2.setText("");
+                            inferencetimes.clear();
                             im.setImageResource(android.R.color.transparent);
                             handler.removeCallbacks(this);
                         }else {
@@ -207,7 +209,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
                             tx1.setText("Inference time (ms): "+textToShow[0]);
                             inferencetimes.add(Integer.valueOf(textToShow[0]));
                             tx2.setText(textToShow[1] + '\n' + textToShow[2] + '\n' + textToShow[3] + '\n' + textToShow[4]);
-                            Log.d(TAG, textToShow[0]);
+                            //Log.d(TAG, textToShow[0]);
                             handler.postDelayed(this, 500);
 
                             scaledBitmap.recycle();
@@ -254,10 +256,10 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
         String textToShow = null;
         convertBitmapToByteBuffer(scaledBitmap);
         long startTime = SystemClock.uptimeMillis();
-        Log.d(TAG,"begin inference");
+        //Log.d(TAG,"begin inference");
 
         tflite.run(imgData, labelProbArray);
-        Log.d(TAG,"end inference");
+        //Log.d(TAG,"end inference");
         long endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "Inference time (ms): " + Long.toString(endTime - startTime));
         applyFilter();
