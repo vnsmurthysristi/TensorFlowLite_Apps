@@ -161,6 +161,7 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
                 ToggleButton simpleToggleButton = (ToggleButton) findViewById(R.id.simpleToggleButton);
                 nnapi = simpleToggleButton.isChecked();
                 tflite.setUseNNAPI(nnapi);
+
                 filterLabelProbArray = new float[FILTER_STAGES][getNumLabels()];
 
 
@@ -210,12 +211,12 @@ public class SimpleImageClassifierTFlite extends AppCompatActivity {
                             inferencetimes.add(Integer.valueOf(textToShow[0]));
                             tx2.setText(textToShow[1] + '\n' + textToShow[2] + '\n' + textToShow[3] + '\n' + textToShow[4]);
                             //Log.d(TAG, textToShow[0]);
-                            handler.postDelayed(this, 500);
+                            handler.postDelayed(this, 100);
 
                             scaledBitmap.recycle();
                         }
                     }
-                }, 500);
+                }, 100);
                 //...................................... Handler end
 
             }

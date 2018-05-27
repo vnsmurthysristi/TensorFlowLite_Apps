@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">TfLiteSimpleImageClassifier</string>
+
+    <string name="country_prompt">Choose a Model</string>
+    <string-array name="model_arrays">
+        <item>MOBILENET_V1_1.0_224_FLOAT</item>
+        <item>INCEPTION_V3_SLIM_2016_FLOAT</item>
+    </string-array>
+
+    <string-array name="image_arrays">
+        <item>test_image.jpg</item>
+        <item>test_image1.jpg</item>
+        <item>test_image2.jpg</item>
+        <item>test_image3.jpg</item>
+        <item>test_image4.jpg</item>
+    </string-array>
+</resources>
